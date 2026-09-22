@@ -8,11 +8,8 @@ from contextlib import asynccontextmanager
 
 
 DATABASE_URL = "sqlite:///./tasks.db"
-
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
 
 
@@ -75,6 +72,7 @@ async def lifespan(app: FastAPI):
         db.close()
     yield
     print("Application shutdown")
+
 
 app = FastAPI(lifespan=lifespan)
 
