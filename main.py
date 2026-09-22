@@ -41,6 +41,10 @@ class TaskRequest(BaseModel):
   done: Optional[bool] = False
 
 
+class TaskUpdate(BaseModel):
+    title: Optional[str] = None
+    done: Optional[bool] = None
+
 
 
 def get_db():
@@ -110,3 +114,31 @@ def create_task(task: TaskRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_task)
     return Response(status_code=status.HTTP_201_CREATED, content=f"Task {new_task.id} created successfully")
+
+
+
+
+@app.put("/tasks/{id}")
+async def update_task(id: int, task_update: TaskUpdate, db: Session = Depends(get_db)):
+    task = db.query(Task).filter(Task.id == id).first()
+    if task is None:
+       raise HTTPException(status_code=404, detail=f"Task {id} does not exit")
+    else:
+        task.title = task_update.title if task_update.title is not None else task.title
+        task.done = task_update.done if task_update.done is not None else task.done
+        db.commit()
+        db.refresh(task)
+        return {"message":f"task {id} updated successfully"}, task
+
+
+
+
+@app.delete("/tasks/{id}")
+async def delete_task(id: int, db: Session = Depends(get_db)):
+    task = db.query(Task).filter(Task.id == id).first()
+    if task is None:
+        raise HTTPException(status_code=404, detail=f"Task {id} does not exit")
+    else:
+        db.query(Task).filter(Task.id == id).delete()
+        db.commit()
+        return f"Task {id} has been deleted"
