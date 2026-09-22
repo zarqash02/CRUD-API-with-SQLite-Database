@@ -1,10 +1,11 @@
 from typing import Optional
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, Response
 from pydantic import BaseModel
 from sqlalchemy import Boolean, Column, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
 from contextlib import asynccontextmanager
+
 
 DATABASE_URL = "sqlite:///./tasks.db"
 
@@ -33,6 +34,12 @@ class UserResponse(BaseModel):
 
   class Config:
     orm_mode = True
+
+
+class TaskRequest(BaseModel):
+  title: str
+  done: Optional[bool] = False
+
 
 
 
@@ -91,3 +98,15 @@ def view_tasks(id: int,db: Session = Depends(get_db)):
        raise HTTPException(status_code=404, detail=f"task {id} does not exist")
    else:
        return {task}
+
+
+
+@app.post("/tasks", response_model=UserResponse)
+def create_task(task: TaskRequest, db: Session = Depends(get_db)):
+    new_task = Task(title=task.title, done=task.done)
+    if not new_task.title:
+        raise HTTPException(status_code=400, detail="Task title is required")
+    db.add(new_task)
+    db.commit()
+    db.refresh(new_task)
+    return Response(status_code=status.HTTP_201_CREATED, content=f"Task {new_task.id} created successfully")
