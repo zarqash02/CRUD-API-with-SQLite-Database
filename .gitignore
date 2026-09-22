@@ -4,5 +4,4 @@ src/
 .gitattributes
 .python-version
 pyproject.toml
-tasks.db
 uv.lock
