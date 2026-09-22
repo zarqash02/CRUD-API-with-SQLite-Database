@@ -25,6 +25,26 @@ class Task(Base):
 Base.metadata.create_all(bind=engine)
 
 
+
+class UserResponse(BaseModel):
+  id: Optional[int] = None
+  title: str
+  done: Optional[bool] = False
+
+  class Config:
+    orm_mode = True
+
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db = SessionLocal()
@@ -56,3 +76,18 @@ async def root():
 @app.get("/health")
 def isalive():
     return {"status" : "ok"}
+
+
+@app.get("/tasks", response_model=list[UserResponse])
+def list_tasks(db: Session = Depends(get_db)):
+    return db.query(Task).all()
+
+
+
+@app.get("/tasks/{id}")
+def view_tasks(id: int,db: Session = Depends(get_db)):
+   task = db.query(Task).filter(Task.id == id).first()
+   if task is None:
+       raise HTTPException(status_code=404, detail=f"task {id} does not exist")
+   else:
+       return {task}
