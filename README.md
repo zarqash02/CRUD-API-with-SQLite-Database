@@ -55,11 +55,6 @@ Activate it:
 
 ### 3. Install dependencies
 
-```bash
-pip install fastapi uvicorn sqlalchemy pydantic
-```
-
-If a `requirements.txt` is included in the repo, use that instead:
 
 ```bash
 pip install -r requirements.txt
