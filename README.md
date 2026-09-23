@@ -1,56 +1,133 @@
-# FastAPI Task Management API
+# Task API
 
-A lightweight REST API built with FastAPI and SQLAlchemy for managing a simple task list. The application includes automatic database seeding on startup, creating default tasks if the database is empty.
+A simple REST API for managing a to-do list, built with **FastAPI**, **SQLAlchemy**, and **SQLite**.
 
-## Tech Stack & Database Strategy
+## Table of Contents
 
-This project uses **SQLite** as its database engine.
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Setup Instructions](#setup-instructions)
+- [Running the Project](#running-the-project)
+- [Database](#database)
+- [API Endpoints](#api-endpoints)
+- [Inspecting the Database](#inspecting-the-database)
+- [Example SQL Query](#example-sql-query)
 
-**Why SQLite was chosen:**
+## Tech Stack
 
-* **Zero Configuration:** It requires no separate server process or system-level setup, making it ideal for small projects, prototyping, and rapid development.
-* **Portability:** The entire database is contained in a single file, easily shared or deleted to reset the state.
-* **Native Support:** Python has built-in support for SQLite, minimizing external dependencies while fully integrating with SQLAlchemy.
+- **FastAPI** — web framework and routing
+- **SQLAlchemy** — ORM for talking to the database
+- **SQLite** — database engine
+- **Pydantic** — request/response validation and schemas
+- **Uvicorn** — ASGI server used to run the app
 
-**Database Location:**
-The database file is generated automatically upon startup and is stored in the root directory of the project as `./tasks.db`.
+## Prerequisites
 
-## How to Start the Project
+- Python 3.9+ installed
+- `pip` available on your PATH
+- (Optional) [DB Browser for SQLite](https://sqlitebrowser.org/) if you want to inspect the database visually
 
-1. **Install Dependencies**
-Ensure you have Python installed, then install the required packages:
+## Setup Instructions
+
+### 1. Clone the repository
+
+```bash
+git clone <your-repo-url>
+cd <your-repo-folder>
+```
+
+### 2. Create a virtual environment
+
+```bash
+python -m venv venv
+```
+
+Activate it:
+
+- **macOS / Linux:**
+  ```bash
+  source venv/bin/activate
+  ```
+- **Windows (PowerShell):**
+  ```bash
+  venv\Scripts\Activate.ps1
+  ```
+
+### 3. Install dependencies
 
 ```bash
 pip install fastapi uvicorn sqlalchemy pydantic
-
 ```
 
-2. **Run the Server**
-Assuming you saved the code in a file named `main.py`, start the development server using Uvicorn:
+If a `requirements.txt` is included in the repo, use that instead:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Running the Project
+
+Start the API with a single command:
 
 ```bash
 uvicorn main:app --reload
-
 ```
 
-3. **Access the API**
+- The API will be available at: `http://127.0.0.1:8000`
+- Interactive API docs (Swagger UI): `http://127.0.0.1:8000/docs`
+- Alternative docs (ReDoc): `http://127.0.0.1:8000/redoc`
 
-* The API will be available at: `[http://127.0.0.1:8000](http://127.0.0.1:8000)`
-* View the auto-generated Swagger UI documentation at: `[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)`
+On first run, the app automatically seeds the database with three sample tasks if the `tasks` table is empty.
 
-## Database Viewer
+## Database
 
-*(Replace the placeholder below with an actual screenshot of your database viewer, such as DB Browser for SQLite or DBeaver, showing the `tasks` table.)*
+This project uses **SQLite** as its database engine.
+
+**Why SQLite?**
+- **Single file** — the entire database lives in one `.db` file, with no separate database server to install, configure, or run.
+- **Zero setup** — SQLAlchemy connects to it directly via a file path; there's no host, port, username, or password to manage.
+- **Survives restarts** — because it's a real file on disk (not in-memory), all tasks persist across app restarts, unlike data that would be lost if the app used an in-memory store.
+
+This makes SQLite ideal for local development and small projects where the overhead of a full database server (like PostgreSQL or MySQL) isn't justified.
+
+**Where the database file lives:**
+- The database is stored as `tasks.db` in the project's root directory.
+- It is created **automatically** the first time the app starts — you do not need to create it manually.
+- `tasks.db` is typically added to `.gitignore`, so it is **not** committed to version control. This means every fresh clone of the repository starts with an empty/newly-seeded database rather than inheriting someone else's data.
+
+## API Endpoints
+
+| Method | Endpoint      | Description                     |
+|--------|---------------|----------------------------------|
+| GET    | `/`           | API info                        |
+| GET    | `/health`     | Health check                    |
+| GET    | `/tasks`      | List all tasks                  |
+| GET    | `/tasks/{id}` | Get a single task by ID         |
+| POST   | `/tasks`      | Create a new task               |
+| PUT    | `/tasks/{id}` | Update an existing task         |
+| DELETE | `/tasks/{id}` | Delete a task                   |
+
+## Inspecting the Database
+
+You can open `tasks.db` directly in [DB Browser for SQLite](https://sqlitebrowser.org/) to view or query the data:
+
+1. Open DB Browser for SQLite.
+2. Choose **Open Database** and select `tasks.db` from the project root.
+3. Go to the **Browse Data** tab to view the `tasks` table, or the **Execute SQL** tab to run queries.
+
+**Screenshot:**
+
+image.png
 
 ## Example SQL Query
 
-If you open the `tasks.db` file in a database viewer, you can execute standard SQL commands to interact with the data independently of the API.
 
-Here is an example query to fetch all tasks that are currently marked as incomplete:
+Example
 
 ```sql
-SELECT id, title, done 
-FROM tasks 
+SELECT id, title, done
+FROM tasks
 WHERE done = 0;
-
 ```
+
+This returns all tasks that are not yet completed.
