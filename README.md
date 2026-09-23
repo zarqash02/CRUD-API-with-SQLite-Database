@@ -32,8 +32,8 @@ A simple REST API for managing a to-do list, built with **FastAPI**, **SQLAlchem
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
-cd <your-repo-folder>
+git clone https://github.com/zarqash02/CRUD-API-with-SQLite-Database
+cd CRUD-API-with-SQLite-Database
 ```
 
 ### 2. Create a virtual environment
